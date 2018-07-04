@@ -1,0 +1,22 @@
+Package: greta.hm
+Type: Package
+Title:  Hierarchical models using Greta.
+URL: https://github.com/dirmeier/greta.hm
+BugReports: https://github.com/dirmeier/greta.hm
+Depends: 
+    R(>= 3.5),
+    greta
+License: GPL-3
+Encoding: UTF-8
+Suggests:
+    testthat,
+    knitr,
+    rmarkdown,
+    lintr,
+    covr
+VignetteBuilder: knitr
+RoxygenNote: 6.0.1
+Imports:
+    stats,
+    R6,
+    tensorflow
