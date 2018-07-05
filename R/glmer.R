@@ -47,10 +47,6 @@ greta.glmer <- function(
     prior_error_sd
   }
 
-  int  <- normal(0, 10)
-  coef <- normal(0, 10)
-  sd   <- cauchy(0, 3, truncation = c(0, Inf))
-
   n.species  <- length(unique(iris$Species))
   species_id <- as.numeric(iris$Species)
   mu         <- zeros(n.species)
