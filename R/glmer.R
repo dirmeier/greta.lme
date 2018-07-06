@@ -1,4 +1,6 @@
-
+#' @examples
+#'
+#' greta.glmer(Sepal.Length ~ Sepal.Width + (1 | Species), iris)
 greta.glmer <- function(
   formula,
   data,
@@ -62,15 +64,16 @@ model(obj$Petal.Length_coef)
       zt.level_p <- sum(zt.u.level == zt.levels)
       zt.level.idx <- which(zt.u.level == zt.levels)
       ranef_sd   <- greta::wishart(zt.level_p + 1, diag(zt.level_p))
-      ranef_coef <- greta::multivariate_normal(rep(0, zt.level_p), ranef_sd)
+      if (p == 1) {
+        ranef_coef <- greta::multivariate_normal(rep(0, zt.level_p), ranef_sd)
+      } else {
+        ranef_coef <- greta::normal(0, ranef_sd)
+      }
       gamma[seq(idxs, idxs + zt.level_p - 1)] <- ranef_coef
-
       gamma_sd[seq(idxs, idxs + zt.level_p - 1), seq(idxs, idxs + zt.level_p - 1)] <- ranef_sd
-
-      eta <- eta + as.matrix(t(zt[zt.level.idx, ])) %*% ranef_coef
+      eta <- eta + as.matrix(t(zt))[,zt.level.idx, drop=FALSE] %*% ranef_coef
       idxs <- idxs + zt.level_p
     }
   }
 
-  R6::R6Class
 }
