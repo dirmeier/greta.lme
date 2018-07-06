@@ -2,11 +2,10 @@
 greta.glmer <- function(
   formula,
   data,
-  family = gaussian(),
-  prior_intercept = NULL,
-  prior_coefficients = NULL,
-  prior_random_effects = NULL,
-  prior_error_sd = NULL)
+  prior_intercept = greta::variable(),
+  prior_coefficients = greta::variable(),
+  prior_random_effects = greta::variable(),
+  prior_error_sd = greta::variable(0, Inf))
 {
   stopifnot(!methods::is(formula, "formula"))
   stopifnot(!methods::is(family, "family"))
@@ -21,55 +20,57 @@ greta.glmer <- function(
   mc[[1]] <- quote(lme4::glFormula)
   mod     <- eval(mc, parent.frame())
 
-  m <- .model(mod, family, prior_intercept, prior_coefficients, prior_random_effects, prior_error_sd)
+  m <- .model(mod, prior_intercept, prior_coefficients, prior_random_effects, prior_error_sd)
   m
 }
 
-.model <- function(mod, family, prior_intercept, prior_coefficients, prior_random_effects, prior_error_sd)
+obj <- lmm(~ Petal.Length + (1 | species), data = iris)
+distribution(iris$Sepal.Length) <- normal(obj$predictor, sd)
+model(obj$Petal.Length_coef)
+
+.model <- function(mod, prior_intercept, prior_coefficients, prior_random_effects, prior_error_sd)
 {
-  X <- greta::as_data(mod$X)
+  X <- greta::as_data(as.matrix(mod$X))
   n <- nrow(X)
   p <- ncol(X)
 
-  int <- if (is.null(prior_intercept)) {
-    greta::uniform(-1000, 1000, dim=1)
-  } else {
-      prior_intercept
+  coef_prior    <- greta::zeros(p)
+  coef_prior[1] <- greta::variable()
+  coef_sd       <- greta::cauchy(0, 3, truncation=c(0, Inf))
+  for (i in seq(2, p))
+    coef_prior[i] <- greta::normal(0, coef_sd)
+
+  Z <- as.matrix(t(mod$reTrms$Zt))
+  ztlist <- mod$reTrms$Ztlist
+
+  n.random <- ncol(Z)
+  n.ranef <- length(ztlist)
+
+  group.indexes <- mod$reTrms$Gp
+  groupings <- mod$reTrms$flist
+
+  eta <- X %*% coef_prior
+
+  gamma    <- greta::zeros(n.random)
+  gamma_sd <- greta::zeros(n.random, n.random)
+  idxs <- 1
+  for (i in seq(n.ranef)) {
+    zt       <- ztlist[[i]]
+    zt.levels   <- rownames(zt)
+    zt.u.levels <- unique(zt.levels)
+    for (zt.u.level in zt.u.levels) {
+      zt.level_p <- sum(zt.u.level == zt.levels)
+      zt.level.idx <- which(zt.u.level == zt.levels)
+      ranef_sd   <- greta::wishart(zt.level_p + 1, diag(zt.level_p))
+      ranef_coef <- greta::multivariate_normal(rep(0, zt.level_p), ranef_sd)
+      gamma[seq(idxs, idxs + zt.level_p - 1)] <- ranef_coef
+
+      gamma_sd[seq(idxs, idxs + zt.level_p - 1), seq(idxs, idxs + zt.level_p - 1)] <- ranef_sd
+
+      eta <- eta + as.matrix(t(zt[zt.level.idx, ])) %*% ranef_coef
+      idxs <- idxs + zt.level_p
+    }
   }
-  coef <- if (is.null(prior_coefficients)) {
-    greta::uniform(-1000, 1000, dim=p)
-  } else {
-    prior_coefficients
-  }
-  serr <- if (is.null(prior_error_sd)) {
-    greta::inverse_gamma(1, 1, dim=1)
-  } else {
-    prior_error_sd
-  }
 
-  n.species  <- length(unique(iris$Species))
-  species_id <- as.numeric(iris$Species)
-  mu         <- zeros(n.species)
-
-  Z     <- matrix(0, nrow(iris), n.species * 2)
-  gamma <- zeros(n.species * 2)
-
-  for (s in unique(species_id)) {
-    Z[species_id == s, s * 2  - 1] <- 1
-    Z[species_id == s, s * 2]  <- iris$Petal.Length[species_id == s]
-    ranef_sd <- wishart(5, diag(2))
-    gamma[(s * 2 - 1):(s * 2)] <- multivariate_normal(rep(0, 2), ranef_sd)
-  }
-
-  wi <- as_data(iris$Sepal.Width)
-  Z  <- as_data(Z)
-
-  mu <- int + coef * wi + Z %*% gamma
-
-
-  sep <- as_data(iris$Sepal.Length)
-
-  distribution(sep) <- normal(mu, sd)
-  m <- model(coef, gamma, sd, int)
-
+  R6::R6Class
 }
