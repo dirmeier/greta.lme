@@ -15,42 +15,63 @@
 #' @param formula  an \code{lme4}-style formula
 #' @param data  the data set containing the variables described in
 #'  \code{formula}
-#' @param  prior_intercept  a \code{\link{greta::greta_array}} random variable
+#' @param  prior_intercept  a \code{\link{greta_array}} random variable
 #'  that specifies the prior for the intercept \eqn{\beta_0} for the
 #'  fixed effects design
 #'  matrix. If \code{NULL}, the distribution for the intercept is chosen as
-#'  \deqn{p(\beta_0) \propto const.} The intercept prior
+#'  \deqn{p(\beta) ∝ const.} The intercept prior
 #'  needs to have dimension 1.
-#' @param  prior_coefficients  a \code{\link{greta::greta_array}} random
+#' @param  prior_coefficients  a \code{\link{greta_array}} random
 #'  variable that specifies the prior for the coefficients\eqn{\beta} for the
 #'  fixed effects
 #'  design matrix. If \code{NULL}, the distribution for the coefficients is
-#'  chosen as \deqn{p(\beta_i) \sim \mathcal{N}(0, \sigma_{\beta}),} and
-#'   \deqn{p(\sigma_{\beta}) \sim \text{Half-Cauchy}(0, \inf).}
+#'  chosen as \deqn{p(\beta_i) ~ N(0, \sigma),} and
+#'   \deqn{p(\sigma) ~ Half-Cauchy(0, ∞).}
 #'  The coefficients prior
 #'  need to have the same dimensionalty as the number of columns of
 #'  your fixed effects design matrix (without the intercept).
-#' @param  prior_random_effects  a \code{\link{greta::greta_array}} random
-#'  variable that specifies the prior for the random effects \eqn{\beta} for
+#' @param  prior_random_effects  a \code{greta_array} random
+#'  variable that specifies the prior for the random effects \eqn{\gamma} for
 #'  the random effects design matrix. If \code{NULL}, the distribution for the
 #'   random effects is chosen as
-#'   \deqn{p(\gamma_g) \sim \mathcal{N}(0, \sigma_{\gamma_g}),} and
-#'   \deqn{p(\sigma_{\gamma_g}) \sim \text{Wishart}(\text{len}(\gamma_g) + 1, \text{diag}(\text{len}(\gamma_g))).}
+#'   \deqn{p(\gamma) ~ N(0, \tau),} and
+#'   \deqn{p(\tau) ~ Inv-Wishart}
 #'  If \code{prior_random_effects} is provided
 #'  it needs to have the same dimensionalty as the
 #'  number of columns of \eqn{Z}
 #'  random effect design matrix. These are generally not trivial to construct.
-#'  Calling \code{\link{lme4::glFormula(formula, data)} creates the specified
+#'  Calling \code{\link{glFormula(formula, data)}} creates the specified
 #'  random effects matrix \eqn{Z}. From this the dimensionality of
 #'  \code{prior_random_effects} can be inferred.
 #'
 #'
-#' @return Returns a list with the following elements:
-#' \item{}{}
+#' @return Returns a list of class \code{greta.glmer} with the following
+#'  elements:
+#' \item{predictor}{ the linear predictor \eqn{\eta}}
+#' \item{X}{ the fixed effects design matrix}
+#' \item{x.eta}{ the linear predictor \eqn{X\beta}}
+#' \item{coef}{ the prior for the coefficients \eqn{\beta}}
+#' \item{Z}{ the random effects design matrix}
+#' \item{z.eta}{ the linear predictor \eqn{Z\gamma}}
+#' \item{gamma}{ the prior for the random effects \eqn{\gamma}}
+#' \item{Ztlist}{ a list of random effect terms used for initializing \eqn{\gamma}}
+#' \item{grp.vars}{ the variables used for grouping}
+#' \item{call }{ the function call used}
 #'
 #' @examples
 #'
+#' # creates a normal linear model
+#' greta.glmer(Sepal.Length ~ Sepal.Width, iris)
+#'
+#' # create a random intercept model
 #' greta.glmer(Sepal.Length ~ Sepal.Width + (1 | Species), iris)
+#'
+#' # creates a random slope model
+#' greta.glmer(Sepal.Length ~ Sepal.Width + (Sepal.Width | Species), iris)
+#'
+#' # creates a random slope model with multiple random effect terms
+#' greta.glmer(Sepal.Length ~ Sepal.Width + (Sepal.Width | Species) + (Petal.Width | Species), iris)
+#'
 greta.glmer <- function(
   formula,
   data,
@@ -58,21 +79,18 @@ greta.glmer <- function(
   prior_coefficients = NULL,
   prior_random_effects = NULL)
 {
-  stopifnot(!methods::is(formula, "formula"))
-  stopifnot(!is.data.frame(data))
-  stopifnot(any(
-    lapply(list(prior_intercept, prior_coefficients,
-                prior_random_effects, prior_error_sd),
-           function(.) methods::is(., "greta_array"))))
+  stopifnot(methods::is(formula, "formula"))
+  stopifnot(is.data.frame(data))
 
   mc      <- match.call(expand.dots = FALSE)
   mc[[1]] <- quote(lme4::glFormula)
   mod     <- eval(mc, parent.frame())
 
-  m <- .model(mod, prior_intercept, prior_coefficients, prior_random_effects)
-  m$call <- match.call()
+  ret <- .model(mod, prior_intercept, prior_coefficients, prior_random_effects)
+  ret$call <- match.call()
+  class(ret) <- "greta.glmer"
 
-  m
+  ret
 }
 
 
@@ -81,20 +99,27 @@ greta.glmer <- function(
   coef_list  <- .coef_priors(mod, prior_intercept, prior_coefficients)
   ranef_list <- .ranef_priors(mod, prior_random_effects)
 
-  ret           <- c(coef_list, ranef_list)
-  ret$formula   <- mod$mormula
-  ret$predictor <- coef_list$eta + ranef_list$eta
+  res           <- c(coef_list, ranef_list)
+  res$formula   <- mod$mormula
+
+  ret <- c(
+    list(predictor = coef_list$x.eta + ranef_list$z.eta),
+    res
+  )
 
   ret
 }
 
 
+#' @noRd
+#' @importFrom methods is
+#' @importFrom greta normal variable zeros multivariate_normal wishart as_data
 .ranef_priors <- function(mod, prior_random_effects)
 {
-  Z       <- t(as.matrix(mod$reTrms$Zt))
-  Ztlist  <- mod$reTrms$Ztlist
-  Zp      <- ncol(Z)
-  grp.vars   <- mod$reTrms$flist
+  Z        <- greta::as_data(t(as.matrix(mod$reTrms$Zt)))
+  Ztlist   <- mod$reTrms$Ztlist
+  Zp       <- ncol(Z)
+  grp.vars <- mod$reTrms$flist
 
   if (!is.null(prior_random_effects))
   {
@@ -142,7 +167,8 @@ greta.glmer <- function(
       # if random effects prior is not provided, create a random variable and
       # an rv for the covariance
       if (is.null(prior_random_effects)) {
-        gamma_sd[seq(idxs, idxs + zt.level_p - 1), seq(idxs, idxs + zt.level_p - 1)] <- ranef_sd
+        gamma_sd[seq(idxs, idxs + zt.level_p - 1),
+                 seq(idxs, idxs + zt.level_p - 1)] <- ranef_sd
         gamma[seq(idxs, idxs + zt.level_p - 1)] <- ranef_coef
       }
 
@@ -154,29 +180,28 @@ greta.glmer <- function(
   }
 
   ret <- list(
-    eta = eta,
-    gamma = gamma,
     Z = Z,
-    Ztlist = Ztlist,
-    grp.vars = grp.vars)
-  if (is.null(prior_random_effects)) ret$gamma_sd <- gamma_sd
+    z.eta = eta,
+    gamma = gamma)
+  if (is.null(prior_random_effects))
+    ret$gamma_sd <- gamma_sd
+  ret$Ztlist <- Ztlist
+  ret$grp.vars <- grp.vars
 
   ret
 }
 
 
-#' Initialize the priors of intercepts and coefficients
-#'
 #' @noRd
 #' @importFrom methods is
-#' @importFrom greta normal variable zeros
+#' @importFrom greta normal variable zeros cauchy as_data
 .coef_priors <- function(mod, prior_intercept, prior_coefficients)
 {
 
   X <- greta::as_data(as.matrix(mod$X))
   p <- ncol(X)
+  el <- list()
 
-  ret <- list(X=X)
   coef_prior <- greta::zeros(p)
 
   if (is.null(prior_intercept))
@@ -195,7 +220,7 @@ greta.glmer <- function(
     coef_sd <- greta::cauchy(0, 3, truncation=c(0, Inf))
     for (i in seq(2, p))
       coef_prior[i] <- greta::normal(0, coef_sd)
-    ret$coef_sd <- coef_sd
+    el$coef_sd <- coef_sd
   }
   else
   {
@@ -204,8 +229,14 @@ greta.glmer <- function(
     coef_prior[seq(2, p)] <- prior_coefficients
   }
 
-  ret$coef <- coef
-  ret$eta <- X %*% coef
+  eta <- X %*% coef_prior
+
+  ret <- c(
+    list(
+      X = X,
+      x.eta = eta,
+      coef = coef_prior),
+    el)
 
   ret
 }

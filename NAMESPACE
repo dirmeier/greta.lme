@@ -2,8 +2,12 @@
 
 export(greta.glmer)
 import(greta)
+importFrom(greta,as_data)
+importFrom(greta,cauchy)
+importFrom(greta,multivariate_normal)
 importFrom(greta,normal)
 importFrom(greta,variable)
+importFrom(greta,wishart)
 importFrom(greta,zeros)
 importFrom(lme4,glFormula)
 importFrom(methods,is)

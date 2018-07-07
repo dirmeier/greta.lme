@@ -18,20 +18,19 @@ License: GPL-3
 Encoding: UTF-8
 LazyData: TRUE
 RoxygenNote: 6.0.1
-Depends:
-    R(>= 3.5),
-    methods,
-    greta
-Suggests:
-    testthat,
-    knitr,
-    rmarkdown,
-    lintr,
-    covr
 VignetteBuilder: knitr
-RoxygenNote: 6.0.1
+Depends:
+  R(>= 3.5),
+  methods,
+  greta
+Suggests:
+  testthat,
+  knitr,
+  rmarkdown,
+  lintr,
+  covr
 Imports:
-    stats,
-    R6,
-    formula.tools,
-    lme4
+  stats,
+  R6,
+  formula.tools,
+  lme4

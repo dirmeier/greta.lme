@@ -13,50 +13,70 @@ greta.glmer(formula, data, prior_intercept = NULL,
 \item{data}{the data set containing the variables described in
 \code{formula}}
 
-\item{prior_intercept}{a \code{\link{greta::greta_array}} random variable
+\item{prior_intercept}{a \code{\link{greta_array}} random variable
 that specifies the prior for the intercept \eqn{\beta_0} for the
 fixed effects design
 matrix. If \code{NULL}, the distribution for the intercept is chosen as
-\deqn{p(\beta_0) \propto const}. The intercept prior
+\deqn{p(\beta) ∝ const.} The intercept prior
 needs to have dimension 1.}
 
-\item{prior_coefficients}{a \code{\link{greta::greta_array}} random
+\item{prior_coefficients}{a \code{\link{greta_array}} random
 variable that specifies the prior for the coefficients\eqn{\beta} for the
 fixed effects
 design matrix. If \code{NULL}, the distribution for the coefficients is
-chosen as \deqn{p(\beta_i) \sim \mathcal{N}(0, \sigma_{\beta})}, and
- \deqn{p(\sigma_{\beta}) \sim \text{Half-Cauchy}(0, \inf)}.
+chosen as \deqn{p(\beta_i) ~ N(0, \sigma),} and
+ \deqn{p(\sigma) ~ Half-Cauchy(0, ∞).}
 The coefficients prior
 need to have the same dimensionalty as the number of columns of
 your fixed effects design matrix (without the intercept).}
 
-\item{prior_random_effects}{a \code{\link{greta::greta_array}} random
-variable that specifies the prior for the random effects \eqn{\beta} for
+\item{prior_random_effects}{a \code{greta_array} random
+variable that specifies the prior for the random effects \eqn{\gamma} for
 the random effects design matrix. If \code{NULL}, the distribution for the
  random effects is chosen as
- \deqn{p(\gamma_g) \sim \mathcal{N}(0, \sigma_{\gamma_g})}, and
- \deqn{p(\sigma_{\gamma_g}) \sim \text{Wishart}(\text{len}(\gamma_g) + 1, \text{diag}(\text{len}(\gamma_g)))}.
+ \deqn{p(\gamma) ~ N(0, \tau),} and
+ \deqn{p(\tau) ~ Inv-Wishart}
 If \code{prior_random_effects} is provided
 it needs to have the same dimensionalty as the
 number of columns of \eqn{Z}
 random effect design matrix. These are generally not trivial to construct.
-Calling \code{lme4::glFormula(formula, data)} creates the specified
+Calling \code{\link{glFormula(formula, data)}} creates the specified
 random effects matrix \eqn{Z}. From this the dimensionality of
 \code{prior_random_effects} can be inferred.}
 }
 \value{
 Returns a list with the following elements:
-\item{}{}
+\item{predictor}{ the linear predictor \eqn{\eta}}
+\item{X}{ the fixed effects design matrix}
+\item{x.eta}{ the linear predictor \eqn{X\beta}}
+\item{coef}{ the prior for the coefficients \eqn{\beta}}
+\item{Z}{ the random effects design matrix}
+\item{z.eta}{ the linear predictor \eqn{Z\gamma}}
+\item{gamma}{ the prior for the random effects \eqn{\gamma}}
+\item{Ztlist}{ a list of random effect terms used for initializing \eqn{gamma}}
+\item{grp.vars}{ the variables used for grouping}
+\item{call }{ the function call used}
 }
 \description{
 \code{greta.glmer} creates the linear predictor $eta$ required
 for fitting generalized linear mixed models. The linear predictor has the
-form: \deqn{\eta = X \beta + Z \gamma},
+form: \deqn{\eta = X \beta + Z \gamma,}
 where \eqn{X} is the fixed effects design matrix, \eqn{\beta} the fixed
 effects, \eqn{Z} the random effects design matrix and \eqn{\gamma} the
 random effects.
 }
 \examples{
 
+# creates a normal linear model
+greta.glmer(Sepal.Length ~ Sepal.Width, iris)
+
+# create a random intercept model
 greta.glmer(Sepal.Length ~ Sepal.Width + (1 | Species), iris)
+
+# creates a random slope model
+greta.glmer(Sepal.Length ~ Sepal.Width + (Sepal.Width | Species), iris)
+
+# creates a random slope model with multiple random effect terms
+greta.glmer(Sepal.Length ~ Sepal.Width + (Sepal.Width | Species) + (Petal.Width | Species), iris)
+
 }
