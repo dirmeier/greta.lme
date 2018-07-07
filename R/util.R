@@ -1,8 +1,7 @@
 
 #' @noRd
-check.dimensionality <- function(vec, should_be)
+check.dimensionality <- function(dim_vec, should_be)
 {
-  dim_vec <- dim(vec)
   if (all(dim_vec != should_be))
   {
     stop(paste(

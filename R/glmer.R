@@ -84,6 +84,7 @@ greta.glmer <- function(
 
   mc      <- match.call(expand.dots = FALSE)
   mc[[1]] <- quote(lme4::glFormula)
+  mc$prior_intercept <- mc$prior_coefficients <- mc$prior_random_effects <- NULL
   mod     <- eval(mc, parent.frame())
 
   ret <- .model(mod, prior_intercept, prior_coefficients, prior_random_effects)
@@ -94,6 +95,7 @@ greta.glmer <- function(
 }
 
 
+#' @noRd
 .model <- function(mod, prior_intercept, prior_coefficients, prior_random_effects)
 {
   coef_list  <- .coef_priors(mod, prior_intercept, prior_coefficients)
