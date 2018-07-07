@@ -28,6 +28,14 @@ testthat::test_that("glmer contains every list item", {
 })
 
 
+testthat::test_that("glmer model works on example", {
+  m <- greta.glmer(Sepal.Length ~ Sepal.Width + (Sepal.Width | Species), iris)
+  sd <- greta::inverse_gamma(1, 1)
+  greta::distribution(iris$Sepal.Length) <- greta::normal(m$predictor, sd)
+  testthat::expect_silent(greta::model(m$coef, m$gamma))
+})
+
+
 testthat::test_that("glmer builds intercept model with custom coefficients", {
   m <- greta.glmer(Sepal.Length ~ Sepal.Width + (1 | Species), iris,
                    prior_coefficients = greta::variable(dim=1))

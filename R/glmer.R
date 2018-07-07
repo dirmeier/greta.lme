@@ -69,7 +69,23 @@
 #' greta.glmer(Sepal.Length ~ Sepal.Width + (Sepal.Width | Species), iris)
 #'
 #' # creates a random slope model with multiple random effect terms
-#' greta.glmer(Sepal.Length ~ Sepal.Width + (Sepal.Width | Species) + (Petal.Width | Species), iris)
+#' greta.glmer(Sepal.Length ~ Sepal.Width + (Sepal.Width | Species) + (Petal.Width | Species),
+#'             iris)
+#'
+#' # creates a random slope model with strong regularizing prior
+#' greta.glmer(Sepal.Length ~ Sepal.Width + (Sepal.Width | Species),
+#'            iris,
+#'            prior_random_effects = greta::normal(0, 1, dim=3))
+#'
+#' # creates a random slope model with flat coefficient prior
+#' greta.glmer(Sepal.Length ~ Sepal.Width + (Sepal.Width | Species),
+#'            iris,
+#'            prior_coefficients = greta::variable(dim=1))
+#'
+#' # creates a random slope model with normal intercept prior
+#' greta.glmer(Sepal.Length ~ Sepal.Width + (Sepal.Width | Species),
+#'            iris,
+#'            prior_intercept = greta::normal(0, 1))
 #'
 greta.glmer <- function(
   formula,
@@ -100,12 +116,14 @@ greta.glmer <- function(
 {
   coef_list  <- .coef_priors(mod, prior_intercept, prior_coefficients)
   ranef_list <- .ranef_priors(mod, prior_random_effects)
+  eta        <- coef_list$x.eta + ranef_list$z.eta
 
   res           <- c(coef_list, ranef_list)
   res$formula   <- mod$mormula
 
+
   ret <- c(
-    list(predictor = coef_list$x.eta + ranef_list$z.eta),
+    list(predictor = eta),
     res
   )
 
@@ -159,7 +177,9 @@ greta.glmer <- function(
       zt.level.idx <- which(zt.u.level == zt.levels)
 
       # we just use a wishart, because it creates an psd matrix
-      ranef_sd   <- solve(greta::wishart(zt.level_p + 1, diag(zt.level_p)))
+      ## changing to ranef_sd here throws an error
+      # ranef_sd   <- solve(greta::wishart(zt.level_p + 1, diag(zt.level_p)))
+      ranef_sd <- diag(zt.level_p)
       ranef_coef <- if (zt.level_p > 1) {
         greta::multivariate_normal(rep(0, zt.level_p), ranef_sd)
       } else {
@@ -175,7 +195,7 @@ greta.glmer <- function(
       }
 
       # add design matrix * random effect to the linear predictor
-      z    <- t(as.matrix(zt))[,zt.level.idx, drop=FALSE]
+      z    <- greta::as_data(t(as.matrix(zt))[,zt.level.idx, drop=FALSE])
       eta  <- eta + z %*% gamma[seq(idxs, idxs + zt.level_p - 1)]
       idxs <- idxs + zt.level_p
     }

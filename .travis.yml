@@ -1,7 +1,7 @@
 language: r
 sudo: required
 dist: trusty
-
+warnings_are_errors: false
 cache: packages
 
 env:
@@ -9,6 +9,32 @@ env:
     - R_BUILD_ARGS="--no-build-vignettes --no-manual"
     - R_CHECK_ARGS="--no-build-vignettes --no-manual --as-cran"
     - LINTR_COMMENT_BOT=false
+
+cache:
+  packages: true
+  directories:
+    - $HOME/.cache/pip
+
+addons:
+  apt:
+    sources:
+      ubuntu-toolchain-r-test
+    packages:
+      - libmagick++-dev
+      - wget
+      - libatlas3gf-base
+      - libatlas-dev
+      - python-joblib
+      - python-dev
+      - libv8-dev
+
+before_install:
+  - pip install --upgrade pip
+  - pip install --user numpy
+  - pip install --user tensorflow
+
+r_github_packages:
+  - greta-dev/greta
 
 r_packages:
   - devtools
