@@ -47,21 +47,20 @@
 #'
 #' @return Returns a list of class \code{greta.glmer} with the following
 #'  elements:
-#' \item{predictor}{ the linear predictor \eqn{\eta}}
-#' \item{X}{ the fixed effects design matrix}
-#' \item{x.eta}{ the linear predictor \eqn{X\beta}}
-#' \item{coef}{ the prior for the coefficients \eqn{\beta}}
-#' \item{Z}{ the random effects design matrix}
-#' \item{z.eta}{ the linear predictor \eqn{Z\gamma}}
-#' \item{gamma}{ the prior for the random effects \eqn{\gamma}}
-#' \item{Ztlist}{ a list of random effect terms used for initializing \eqn{\gamma}}
-#' \item{grp.vars}{ the variables used for grouping}
+#' \item{predictor }{ the linear predictor \eqn{\eta}}
+#' \item{X }{ the fixed effects design matrix}
+#' \item{x.eta }{ the linear predictor \eqn{X\beta}}
+#' \item{coef }{ the prior for the coefficients \eqn{\beta}}
+#' \item{Z }{ the random effects design matrix}
+#' \item{z.eta }{ the linear predictor \eqn{Z\gamma}}
+#' \item{gamma }{ the prior for the random effects \eqn{\gamma}}
+#' \item{Ztlist }{ a list of random effect terms used for initializing \eqn{\gamma}}
+#' \item{grp.vars }{ the variables used for grouping}
 #' \item{call }{ the function call used}
+#' \item{formula }{ the formula used}
 #'
 #' @examples
 #'
-#' # creates a normal linear model
-#' greta.glmer(Sepal.Length ~ Sepal.Width, iris)
 #'
 #' # create a random intercept model
 #' greta.glmer(Sepal.Length ~ Sepal.Width + (1 | Species), iris)
@@ -88,7 +87,8 @@ greta.glmer <- function(
   mod     <- eval(mc, parent.frame())
 
   ret <- .model(mod, prior_intercept, prior_coefficients, prior_random_effects)
-  ret$call <- match.call()
+  ret$call    <- match.call()
+  ret$formula <- mod$formula
   class(ret) <- "greta.glmer"
 
   ret
@@ -175,8 +175,8 @@ greta.glmer <- function(
       }
 
       # add design matrix * random effect to the linear predictor
-      z <- t(as.matrix(zt))[,zt.level.idx, drop=FALSE]
-      eta <- eta + z %*% gamma[seq(idxs, idxs + zt.level_p - 1)]
+      z    <- t(as.matrix(zt))[,zt.level.idx, drop=FALSE]
+      eta  <- eta + z %*% gamma[seq(idxs, idxs + zt.level_p - 1)]
       idxs <- idxs + zt.level_p
     }
   }

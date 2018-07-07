@@ -24,6 +24,7 @@ testthat::test_that("glmer contains every list item", {
   testthat::expect_equal(as.character(mod$call[[2]]),
                          c("~", "Sepal.Length", "Sepal.Width + (1 | Species)"))
   testthat::expect_equal(as.character(mod$call[[3]]), "iris")
+  testthat::expect_true(methods::is(mod$formula, "formula"))
 })
 
 

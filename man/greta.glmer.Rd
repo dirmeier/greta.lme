@@ -45,17 +45,19 @@ random effects matrix \eqn{Z}. From this the dimensionality of
 \code{prior_random_effects} can be inferred.}
 }
 \value{
-Returns a list with the following elements:
-\item{predictor}{ the linear predictor \eqn{\eta}}
-\item{X}{ the fixed effects design matrix}
-\item{x.eta}{ the linear predictor \eqn{X\beta}}
-\item{coef}{ the prior for the coefficients \eqn{\beta}}
-\item{Z}{ the random effects design matrix}
-\item{z.eta}{ the linear predictor \eqn{Z\gamma}}
-\item{gamma}{ the prior for the random effects \eqn{\gamma}}
-\item{Ztlist}{ a list of random effect terms used for initializing \eqn{gamma}}
-\item{grp.vars}{ the variables used for grouping}
+Returns a list of class \code{greta.glmer} with the following
+ elements:
+\item{predictor }{ the linear predictor \eqn{\eta}}
+\item{X }{ the fixed effects design matrix}
+\item{x.eta }{ the linear predictor \eqn{X\beta}}
+\item{coef }{ the prior for the coefficients \eqn{\beta}}
+\item{Z }{ the random effects design matrix}
+\item{z.eta }{ the linear predictor \eqn{Z\gamma}}
+\item{gamma }{ the prior for the random effects \eqn{\gamma}}
+\item{Ztlist }{ a list of random effect terms used for initializing \eqn{\gamma}}
+\item{grp.vars }{ the variables used for grouping}
 \item{call }{ the function call used}
+\item{formula }{ the formula used}
 }
 \description{
 \code{greta.glmer} creates the linear predictor $eta$ required
@@ -67,8 +69,6 @@ random effects.
 }
 \examples{
 
-# creates a normal linear model
-greta.glmer(Sepal.Length ~ Sepal.Width, iris)
 
 # create a random intercept model
 greta.glmer(Sepal.Length ~ Sepal.Width + (1 | Species), iris)
