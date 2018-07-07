@@ -1,14 +1,27 @@
 Package: greta.lme
 Type: Package
 Title: Linear mixed models in greta
+Version: 0.0.1
+Date: 2018-07-07
+Authors@R: person("Simon", "Dirmeier",
+	email = "simon.dirmeier@web.de", role = c("aut", "cre"))
+Maintainer: Simon Dirmeier <simon.dirmeier@web.de>
 URL: https://github.com/dirmeier/greta.lme
 BugReports: https://github.com/dirmeier/greta.lme
+Description: perturbatr does stage-wise analysis of large-scale genetic
+ perturbation screens for integrated data sets consisting of multiple screens.
+ For multiple integrated perturbation screens a hierarchical model that
+ considers the variance between different biological conditions is fitted.
+ The resulting list of gene effects is then further extended using a network
+ propagation algorithm to correct for false negatives.
+License: GPL-3
+Encoding: UTF-8
+LazyData: TRUE
+RoxygenNote: 6.0.1
 Depends:
     R(>= 3.5),
     methods,
     greta
-License: GPL-3
-Encoding: UTF-8
 Suggests:
     testthat,
     knitr,
