@@ -1,8 +1,8 @@
-Package: greta.hm
+Package: greta.lme
 Type: Package
-Title: Hierarchical models using Greta.
-URL: https://github.com/dirmeier/greta.hm
-BugReports: https://github.com/dirmeier/greta.hm
+Title: Linear mixed models in greta
+URL: https://github.com/dirmeier/greta.lme
+BugReports: https://github.com/dirmeier/greta.lme
 Depends:
     R(>= 3.5),
     methods,
