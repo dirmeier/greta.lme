@@ -1,2 +1,7 @@
 ^.*\.Rproj$
 ^\.Rproj\.user$
+.travis.yml
+.lintr
+LICENSE
+appveyor.yml
+miniconda.sh
