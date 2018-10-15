@@ -40,7 +40,7 @@ If \code{prior_random_effects} is provided
 it needs to have the same dimensionalty as the
 number of columns of \eqn{Z}
 random effect design matrix. These are generally not trivial to construct.
-Calling \code{\link{glFormula(formula, data)}} creates the specified
+Calling \code{glFormula(formula, data)} creates the specified
 random effects matrix \eqn{Z}. From this the dimensionality of
 \code{prior_random_effects} can be inferred.}
 }
@@ -94,4 +94,5 @@ greta.glmer(Sepal.Length ~ Sepal.Width + (Sepal.Width | Species),
 greta.glmer(Sepal.Length ~ Sepal.Width + (Sepal.Width | Species),
            iris,
            prior_intercept = greta::normal(0, 1))
+
 }
