@@ -1,7 +1,7 @@
 Package: greta.lme
 Type: Package
 Title: Linear mixed models in greta
-Version: 0.3
+Version: 0.3.0
 Authors@R: person("Simon", "Dirmeier",
 	email = "simon.dirmeier@web.de", role = c("aut", "cre"))
 Maintainer: Simon Dirmeier <simon.dirmeier@web.de>
