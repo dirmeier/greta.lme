@@ -73,7 +73,7 @@
 #' # creates a random slope model with strong regularizing prior
 #' greta.glmer(Sepal.Length ~ Sepal.Width + (Sepal.Width | Species),
 #'            iris,
-#'            prior_random_effects = greta::normal(0, 1, dim=3))
+#'            prior_random_effects = greta::normal(0, 1, dim=6))
 #'
 #' # creates a random slope model with flat coefficient prior
 #' greta.glmer(Sepal.Length ~ Sepal.Width + (Sepal.Width | Species),
@@ -177,7 +177,7 @@ greta.glmer <- function(
       # we just use a wishart, because it creates an psd matrix
       ## changing to ranef_sd here throws an error
       # ranef_sd <- solve(greta::wishart(zt.level_p + 1, diag(zt.level_p)))
-      ranef_sd <- diag(zt.level_p)
+      ranef_sd <- base::diag(zt.level_p)
       ranef_coef <- if (zt.level_p > 1) {
         greta::multivariate_normal(t(rep(0, zt.level_p)), ranef_sd)
       } else {
@@ -190,10 +190,11 @@ greta.glmer <- function(
         gamma_sd[seq(idxs, idxs + zt.level_p - 1),
                  seq(idxs, idxs + zt.level_p - 1)] <- ranef_sd
         gamma[seq(idxs, idxs + zt.level_p - 1)] <- ranef_coef
+        stopifnot(ncol(Z) == nrow(gamma))
       }
 
       # add design matrix * random effect to the linear predictor
-      z    <- greta::as_data(t(as.matrix(zt))[,zt.level.idx, drop=FALSE])
+      z    <- greta::as_data(t(as.matrix(zt))[, zt.level.idx, drop=FALSE])
       eta  <- eta + z %*% gamma[seq(idxs, idxs + zt.level_p - 1)]
       idxs <- idxs + zt.level_p
     }

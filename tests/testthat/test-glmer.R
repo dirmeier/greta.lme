@@ -62,6 +62,14 @@ testthat::test_that("glmer builds slope model with custom coefficients", {
   testthat::expect_true(dim(m$Z)[2] == 6)
 })
 
+testthat::test_that("glmer fails slope model with wring dimensionality", {
+  testthat::expect_error(
+    greta.glmer(Sepal.Length ~ Sepal.Width + (Sepal.Width | Species), iris,
+                prior_random_effects = greta::normal(0, 1, dim=5))
+  )
+})
+
+
 testthat::test_that("glmer throws when no raneds", {
   testthat::expect_error(
     greta.glmer(Sepal.Length ~ Sepal.Width, iris)

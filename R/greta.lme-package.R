@@ -1,6 +1,6 @@
 #' greta.lme
 #'
-#' Linear effect models using greta
+#' Linear mixed effects models using greta
 #'
 #' @import greta
 #'
