@@ -81,7 +81,7 @@ greta.glmer(Sepal.Length ~ Sepal.Width + (Sepal.Width | Species) + (Petal.Width 
 # creates a random slope model with strong regularizing prior
 greta.glmer(Sepal.Length ~ Sepal.Width + (Sepal.Width | Species),
            iris,
-           prior_random_effects = greta::normal(0, 1, dim=3))
+           prior_random_effects = greta::normal(0, 1, dim=6))
 
 # creates a random slope model with flat coefficient prior
 greta.glmer(Sepal.Length ~ Sepal.Width + (Sepal.Width | Species),

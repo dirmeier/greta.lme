@@ -5,7 +5,7 @@
 \alias{greta.lme-package}
 \title{greta.lme}
 \description{
-Linear effect models using greta
+Linear mixed effects models using greta
 }
 \author{
 Simon Dirmeier
