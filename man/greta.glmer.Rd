@@ -68,8 +68,6 @@ effects, \eqn{Z} the random effects design matrix and \eqn{\gamma} the
 random effects.
 }
 \examples{
-
-
 # create a random intercept model
 greta.glmer(Sepal.Length ~ Sepal.Width + (1 | Species), iris)
 

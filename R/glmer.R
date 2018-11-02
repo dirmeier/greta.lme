@@ -60,8 +60,6 @@
 #' \item{formula }{ the formula used}
 #'
 #' @examples
-#'
-#'
 #' # create a random intercept model
 #' greta.glmer(Sepal.Length ~ Sepal.Width + (1 | Species), iris)
 #'
@@ -121,7 +119,6 @@ greta.glmer <- function(
   res           <- c(coef_list, ranef_list)
   res$formula   <- mod$mormula
 
-
   ret <- c(
     list(predictor = eta),
     res
@@ -144,9 +141,10 @@ greta.glmer <- function(
   if (!is.null(prior_random_effects))
   {
     stopifnot(methods::is(prior_random_effects, "greta_array"))
-    desc <- prior_random_effects$node$description()
+    desc <- attr(prior_random_effects, "node")$description()
     if (!length(grep("normal", desc)))
-      stop("Random effects prior does not follow a normal distribution", call.=FALSE)
+      stop("Random effects prior does not follow a normal distribution",
+           call.=FALSE)
     check.dimensionality(dim(prior_random_effects), c(Zp, 1))
   }
 
@@ -178,10 +176,10 @@ greta.glmer <- function(
 
       # we just use a wishart, because it creates an psd matrix
       ## changing to ranef_sd here throws an error
-      # ranef_sd   <- solve(greta::wishart(zt.level_p + 1, diag(zt.level_p)))
+      # ranef_sd <- solve(greta::wishart(zt.level_p + 1, diag(zt.level_p)))
       ranef_sd <- diag(zt.level_p)
       ranef_coef <- if (zt.level_p > 1) {
-        greta::multivariate_normal(rep(0, zt.level_p), ranef_sd)
+        greta::multivariate_normal(t(rep(0, zt.level_p)), ranef_sd)
       } else {
         greta::normal(0, ranef_sd)
       }
