@@ -9,7 +9,7 @@
 
 a greta extension for hierarchical models 
  
-## Introduction
+## About
 
 `greta.lme` is an extension package for `greta` to allow easier building of hierarchical models, such as mixed effect models.
 For example, a normal hierarchical model using random intercepts for the iris data set in `lme4` formula style:
@@ -29,6 +29,14 @@ d <- mcmc(m)
 devtools::install_github("greta-dev/greta")
 devtools::install_github("dirmeier/greta.lme")
 ```
+
+The current `greta.lme` release uses the same version numbers as the current `greta` release, such that it's easier to see what works together, e.g.
+
+```r
+devtools::install_github("greta-dev/greta@0.3.0")
+devtools::install_github("dirmeier/greta.lme@0.3.0")
+```
+
 
 ## Author
 
