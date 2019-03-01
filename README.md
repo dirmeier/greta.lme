@@ -1,9 +1,7 @@
 # greta.lme
 
 [![Project Status](http://www.repostatus.org/badges/latest/concept.svg)](http://www.repostatus.org/#concept)
-[![Project Life](https://img.shields.io/badge/lifecycle-experimental-orange.svg)](https://www.tidyverse.org/lifecycle/#experimental)
-[![Build travis](https://travis-ci.org/dirmeier/greta.lme.svg?branch=master)](https://travis-ci.org/dirmeier/greta.lme)
-[![Build status](https://ci.appveyor.com/api/projects/status/y1q7ynuvc7eo0pt3?svg=true)](https://ci.appveyor.com/project/dirmeier/greta-lme)
+[![Project Life](https://img.shields.io/badge/lifecycle-maturing-orange.svg)](https://www.tidyverse.org/lifecycle/#maturing)
 [![codecov](https://codecov.io/gh/dirmeier/greta.lme/branch/master/graph/badge.svg)](https://codecov.io/gh/dirmeier/greta.lme)
 [![CRAN](http://www.r-pkg.org/badges/version/greta.lme?color=white)](https://cran.r-project.org/package=greta.lme)
 
