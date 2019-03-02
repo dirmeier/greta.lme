@@ -14,16 +14,25 @@ cache:
   directories:
     - $HOME/.cache/pip
 
+
+addons:
+  apt:
+    sources:
+      ubuntu-toolchain-r-test
+    packages:
+      - libmagick++-dev
+      - wget
+      - libatlas3gf-base
+      - libatlas-dev
+      - python-joblib
+      - python-dev
+      - libv8-dev
+
 before_install:
-  - wget https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -O miniconda.sh
-  - bash miniconda.sh -b -p $HOME/miniconda
-  - export PATH="$HOME/miniconda/bin:$PATH"
-  - hash -r
-  - conda config --set always_yes yes --set changeps1 no
-  - conda update -q conda
-  - conda config --add channels conda-forge
-  - conda create -y -n r-tensorflow python=3.6 tensorflow-probability==0.5.0  
-  - source activate r-tensorflow
+  - pip install --user numpy
+  - pip install --user scipy
+  - pip install --user 'tensorflow==1.10'
+  - pip install --user 'tensorflow-probability==0.5.0'
 
 r_packages:
   - devtools
@@ -40,10 +49,10 @@ r_packages:
   - bayesplot
   - extraDistr
   - tensorflow
-  
-r_github_packages:
-  - greta-dev/greta
 
+r_github_packages:
+  - rich-iannone/DiagrammeRsvg
+  - greta-dev/greta
 
 after_success:
   - tar -C .. -xf $PKG_TARBALL
